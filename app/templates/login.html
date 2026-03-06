@@ -1,24 +1,41 @@
 {% extends "base.html" %}
 {% block body %}
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-5">
-      <div class="card shadow-sm">
-        <div class="card-body p-4">
-          <h3 class="mb-3">Mini-Genesys Login</h3>
-          <p class="text-muted small">Demo accounts: admin/admin123 and agent/agent123</p>
-          <form id="login-form">
-            <div class="mb-3">
-              <label class="form-label">Username</label>
-              <input class="form-control" id="username" value="admin" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Password</label>
-              <input type="password" class="form-control" id="password" value="admin123" required>
-            </div>
-            <button class="btn btn-primary w-100" type="submit">Sign in</button>
-          </form>
-          <div id="login-error" class="alert alert-danger mt-3 d-none"></div>
+<div class="auth-page container py-5">
+  <div class="row justify-content-center py-lg-5">
+    <div class="col-xl-10">
+      <div class="auth-shell row g-0 overflow-hidden">
+        <div class="col-lg-6 auth-showcase p-4 p-lg-5">
+          <p class="eyebrow mb-2">Mini-Genesys</p>
+          <h1 class="auth-title mb-3">Contact Center Command Hub</h1>
+          <p class="auth-copy mb-4">
+            Faster campaign controls, cleaner operator flows, and a softer premium UI designed for all-day use.
+          </p>
+          <div class="d-flex flex-column gap-2 small">
+            <div><i class="bi bi-stars me-2"></i>Polished dashboard navigation</div>
+            <div><i class="bi bi-telephone-forward me-2"></i>Real-time softphone controls</div>
+            <div><i class="bi bi-graph-up-arrow me-2"></i>Campaign and cloud visibility</div>
+          </div>
+        </div>
+
+        <div class="col-lg-6 p-4 p-lg-5 bg-white">
+          <div class="auth-form-wrap">
+            <h3 class="mb-2">Sign In</h3>
+            <p class="text-muted small mb-4">Demo accounts: <code>admin/admin123</code> and <code>agent/agent123</code></p>
+            <form id="login-form">
+              <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input class="form-control form-control-soft" id="username" value="admin" required>
+              </div>
+              <div class="mb-4">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control form-control-soft" id="password" value="admin123" required>
+              </div>
+              <button class="btn btn-soft btn-soft-primary w-100" type="submit">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Sign in
+              </button>
+            </form>
+            <div id="login-error" class="alert alert-danger mt-3 d-none"></div>
+          </div>
         </div>
       </div>
     </div>

@@ -1,59 +1,158 @@
 {% extends "base.html" %}
 {% block body %}
-<div class="container-fluid">
-  <div class="row min-vh-100">
-    <aside class="col-md-2 sidebar p-3">
-      <h5 class="mb-4">Mini-Genesys</h5>
-      <div class="small text-light mb-2">Logged in as <span id="current-user"></span></div>
-      <div class="d-grid gap-2">
-        <button class="btn btn-outline-light nav-btn active" data-section="softphone">Softphone</button>
-        <button class="btn btn-outline-light nav-btn" data-section="campaigns">Campaigns</button>
-        <button class="btn btn-outline-light nav-btn" data-section="cloud">Cloud Replica</button>
-        <button class="btn btn-outline-light nav-btn" data-section="explore">Explore</button>
-        <button class="btn btn-outline-light nav-btn" data-section="logs">Call Logs</button>
-        <button class="btn btn-danger mt-3" id="logout-btn">Logout</button>
+<div class="app-shell container-fluid px-0">
+  <div class="row g-0 min-vh-100">
+    <aside class="col-12 col-lg-3 col-xl-2 sidebar p-3 p-lg-4">
+      <div class="brand-block mb-4">
+        <p class="eyebrow mb-2">Mini-Genesys</p>
+        <h4 class="mb-1">Operations Suite</h4>
+        <div class="small text-light-emphasis">Unified contact center controls</div>
+      </div>
+
+      <div class="profile-chip mb-3">
+        <i class="bi bi-person-circle me-2"></i>
+        Logged in as <span id="current-user" class="fw-semibold ms-1"></span>
+      </div>
+
+      <div class="d-grid gap-2 nav-stack">
+        <button class="btn btn-soft btn-soft-dark nav-btn active" data-section="softphone">
+          <i class="bi bi-headset me-2"></i>Softphone
+        </button>
+        <button class="btn btn-soft btn-soft-dark nav-btn" data-section="campaigns">
+          <i class="bi bi-megaphone me-2"></i>Campaigns
+        </button>
+        <button class="btn btn-soft btn-soft-dark nav-btn" data-section="cloud">
+          <i class="bi bi-cloud-check me-2"></i>Cloud Replica
+        </button>
+        <button class="btn btn-soft btn-soft-dark nav-btn" data-section="explore">
+          <i class="bi bi-compass me-2"></i>Explore
+        </button>
+        <button class="btn btn-soft btn-soft-dark nav-btn" data-section="logs">
+          <i class="bi bi-journal-text me-2"></i>Call Logs
+        </button>
+        <button class="btn btn-soft btn-soft-danger mt-3" id="logout-btn">
+          <i class="bi bi-box-arrow-left me-2"></i>Logout
+        </button>
+      </div>
+
+      <div class="sidebar-note mt-4">
+        <i class="bi bi-lightning-charge-fill me-2"></i>Designed for fast operator actions and low-friction workflows.
       </div>
     </aside>
-    <main class="col-md-10 p-4">
-      <div id="alerts"></div>
+
+    <main class="col-12 col-lg-9 col-xl-10 p-3 p-lg-4 main-pane">
+      <div id="alerts" class="alerts-stack"></div>
+
+      <section class="hero-panel mb-4">
+        <div>
+          <p class="eyebrow mb-2">Contact Center Cockpit</p>
+          <h2 class="mb-1">Operations Command</h2>
+          <p class="text-muted mb-0">Monitor active calls, coordinate campaigns, and navigate cloud modules from one polished interface.</p>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-soft btn-soft-primary" id="quick-refresh-btn">
+            <i class="bi bi-arrow-repeat me-2"></i>Refresh All
+          </button>
+          <div class="theme-switcher" role="group" aria-label="Theme switcher">
+            <button class="theme-btn active" data-theme="corporate">Corporate</button>
+            <button class="theme-btn" data-theme="luxury">Luxury</button>
+            <button class="theme-btn" data-theme="glass">Glass</button>
+          </div>
+          <div class="live-pill"><span class="live-dot"></span>Live</div>
+        </div>
+      </section>
+
+      <section id="quick-stats" class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+          <div class="stat-card">
+            <div class="stat-label">Recent Calls</div>
+            <div class="stat-value" id="stat-calls-total">0</div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="stat-card">
+            <div class="stat-label">Connected</div>
+            <div class="stat-value" id="stat-calls-connected">0</div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="stat-card">
+            <div class="stat-label">Campaign Contacts</div>
+            <div class="stat-value" id="stat-campaign-contacts">0</div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="stat-card">
+            <div class="stat-label">Agent Status</div>
+            <div class="stat-value stat-small" id="stat-agent-status">Unknown</div>
+          </div>
+        </div>
+      </section>
 
       <section id="softphone-section" class="page-section">
         <div class="row g-4">
-          <div class="col-lg-6">
-            <div class="card">
-              <div class="card-header">Agent Status</div>
+          <div class="col-xl-5">
+            <div class="card card-soft mb-3">
+              <div class="card-header card-header-soft">Agent Status</div>
               <div class="card-body">
                 <div class="btn-group" role="group">
-                  <button id="status-available" class="btn btn-success">Available</button>
-                  <button id="status-offline" class="btn btn-secondary">Offline</button>
+                  <button id="status-available" class="btn btn-soft btn-soft-success">Available</button>
+                  <button id="status-offline" class="btn btn-soft btn-soft-muted">Offline</button>
                 </div>
-                <div class="mt-2 small text-muted" id="status-text">Current: unknown</div>
+                <div class="mt-3 small text-muted" id="status-text">Current: unknown</div>
               </div>
             </div>
-            <div class="card mt-3">
-              <div class="card-header">Dial Pad</div>
+
+            <div class="card card-soft">
+              <div class="card-header card-header-soft">Dial Pad</div>
               <div class="card-body">
                 <div class="input-group">
-                  <input class="form-control" id="dial-number" placeholder="+14155551234">
-                  <button class="btn btn-primary" id="manual-call-btn">Call</button>
+                  <input class="form-control form-control-soft" id="dial-number" placeholder="+14155551234">
+                  <button class="btn btn-soft btn-soft-primary" id="manual-call-btn">Call</button>
                 </div>
-                <div class="mt-3 d-flex gap-2">
-                  <button class="btn btn-outline-secondary" id="btn-accept">Accept</button>
-                  <button class="btn btn-outline-warning" id="btn-reject">Reject</button>
-                  <button class="btn btn-outline-info" id="btn-mute">Mute</button>
-                  <button class="btn btn-outline-danger" id="btn-hangup">Hang up</button>
+                <div class="small text-muted mt-2">Shortcut: Ctrl + Enter to dial quickly</div>
+                <div class="mt-3 d-flex flex-wrap gap-2">
+                  <button class="btn btn-soft btn-soft-muted" id="btn-accept">Accept</button>
+                  <button class="btn btn-soft btn-soft-warning" id="btn-reject">Reject</button>
+                  <button class="btn btn-soft btn-soft-info" id="btn-mute">Mute</button>
+                  <button class="btn btn-soft btn-soft-danger" id="btn-hangup">Hang up</button>
                 </div>
               </div>
             </div>
           </div>
-          <div class="col-lg-6">
-            <div class="card">
-              <div class="card-header">Recent Calls</div>
+
+          <div class="col-xl-7">
+            <div class="card card-soft">
+              <div class="card-header card-header-soft d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                <span>Recent Calls</span>
+                <div class="d-flex gap-2">
+                  <input class="form-control form-control-soft form-control-sm" id="calls-filter-input" placeholder="Filter number/status" style="min-width: 180px;">
+                  <select class="form-select form-select-sm form-control-soft" id="calls-status-filter" style="min-width: 150px;">
+                    <option value="">All status</option>
+                    <option value="queued">Queued</option>
+                    <option value="ringing">Ringing</option>
+                    <option value="in-progress">In progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="failed">Failed</option>
+                  </select>
+                </div>
+              </div>
               <div class="card-body p-0">
-                <table class="table table-sm mb-0" id="recent-calls-table">
-                  <thead><tr><th>ID</th><th>Direction</th><th>To</th><th>Status</th><th>Time</th></tr></thead>
-                  <tbody></tbody>
-                </table>
+                <div class="table-responsive">
+                  <table class="table table-soft table-sm mb-0" id="recent-calls-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Direction</th>
+                        <th>To</th>
+                        <th>Status</th>
+                        <th>Time</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
@@ -61,40 +160,56 @@
       </section>
 
       <section id="campaigns-section" class="page-section d-none">
-        <div class="row g-3">
-          <div class="col-lg-4">
-            <div class="card">
-              <div class="card-header">Create Campaign</div>
+        <div class="row g-4">
+          <div class="col-xl-4">
+            <div class="card card-soft">
+              <div class="card-header card-header-soft">Create Campaign</div>
               <div class="card-body">
-                <div class="mb-2"><input class="form-control" id="campaign-name" placeholder="Campaign name"></div>
-                <button class="btn btn-primary" id="create-campaign-btn">Create</button>
+                <div class="mb-2"><input class="form-control form-control-soft" id="campaign-name" placeholder="Campaign name"></div>
+                <button class="btn btn-soft btn-soft-primary w-100" id="create-campaign-btn">Create Campaign</button>
                 <hr>
-                <div class="mb-2"><input class="form-control" id="campaign-id" placeholder="Campaign ID"></div>
+                <div class="mb-2"><input class="form-control form-control-soft" id="campaign-id" placeholder="Campaign ID"></div>
                 <div class="d-flex gap-2 mb-2">
-                  <button class="btn btn-success" id="start-campaign-btn">Start</button>
-                  <button class="btn btn-warning" id="pause-campaign-btn">Pause</button>
-                  <button class="btn btn-danger" id="stop-campaign-btn">Stop</button>
+                  <button class="btn btn-soft btn-soft-success flex-fill" id="start-campaign-btn">Start</button>
+                  <button class="btn btn-soft btn-soft-warning flex-fill" id="pause-campaign-btn">Pause</button>
+                  <button class="btn btn-soft btn-soft-danger flex-fill" id="stop-campaign-btn">Stop</button>
                 </div>
                 <div class="mb-2">
-                  <input type="file" class="form-control" id="csv-file" accept=".csv">
+                  <input type="file" class="form-control form-control-soft" id="csv-file" accept=".csv">
                 </div>
-                <button class="btn btn-outline-primary" id="upload-csv-btn">Upload CSV</button>
+                <button class="btn btn-soft btn-soft-muted w-100" id="upload-csv-btn">Upload CSV</button>
                 <div class="small text-muted mt-2">CSV columns: name,phone</div>
               </div>
             </div>
-            <div class="card mt-3">
-              <div class="card-header">Campaign Summary</div>
+
+            <div class="card card-soft mt-3">
+              <div class="card-header card-header-soft">Campaign Summary</div>
               <div class="card-body" id="campaign-summary">No campaign loaded.</div>
             </div>
           </div>
-          <div class="col-lg-8">
-            <div class="card">
-              <div class="card-header">Campaign Contacts</div>
+
+          <div class="col-xl-8">
+            <div class="card card-soft">
+              <div class="card-header card-header-soft d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                <span>Campaign Contacts</span>
+                <input class="form-control form-control-soft form-control-sm" id="contacts-filter-input" placeholder="Filter by name/phone/status" style="max-width: 280px;">
+              </div>
               <div class="card-body p-0">
-                <table class="table table-sm mb-0" id="campaign-contacts-table">
-                  <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Status</th><th>Attempts</th><th>Error</th></tr></thead>
-                  <tbody></tbody>
-                </table>
+                <div class="table-responsive">
+                  <table class="table table-soft table-sm mb-0" id="campaign-contacts-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Attempts</th>
+                        <th>Error</th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
@@ -102,24 +217,24 @@
       </section>
 
       <section id="cloud-section" class="page-section d-none">
-        <div class="card mb-3">
+        <div class="card card-soft mb-3">
           <div class="card-body">
             <div class="row g-2 align-items-end">
               <div class="col-md-3">
                 <label class="form-label small">Category</label>
-                <select id="cloud-category" class="form-select">
+                <select id="cloud-category" class="form-select form-control-soft">
                   <option value="">All categories</option>
                 </select>
               </div>
               <div class="col-md-5">
                 <label class="form-label small">Search</label>
-                <input id="cloud-search" class="form-control" placeholder="Search module or feature...">
+                <input id="cloud-search" class="form-control form-control-soft" placeholder="Search module or feature...">
               </div>
               <div class="col-md-2 d-grid">
-                <button id="cloud-refresh-btn" class="btn btn-primary">Refresh</button>
+                <button id="cloud-refresh-btn" class="btn btn-soft btn-soft-primary">Refresh</button>
               </div>
               <div class="col-md-2 d-grid">
-                <button id="cloud-action-btn" class="btn btn-outline-dark">Run Dummy Action</button>
+                <button id="cloud-action-btn" class="btn btn-soft btn-soft-muted">Run Dummy Action</button>
               </div>
             </div>
           </div>
@@ -127,82 +242,86 @@
 
         <div class="row g-3 mb-3">
           <div class="col-lg-4">
-            <div class="card h-100">
-              <div class="card-header">Replica Overview</div>
+            <div class="card card-soft h-100">
+              <div class="card-header card-header-soft">Replica Overview</div>
               <div class="card-body" id="cloud-overview"></div>
             </div>
           </div>
           <div class="col-lg-4">
-            <div class="card h-100">
-              <div class="card-header">Queue Snapshot</div>
+            <div class="card card-soft h-100">
+              <div class="card-header card-header-soft">Queue Snapshot</div>
               <div class="card-body" id="cloud-queues"></div>
             </div>
           </div>
           <div class="col-lg-4">
-            <div class="card h-100">
-              <div class="card-header">Dashboards</div>
+            <div class="card card-soft h-100">
+              <div class="card-header card-header-soft">Dashboards</div>
               <div class="card-body" id="cloud-dashboards"></div>
             </div>
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">Cloud Modules (Dummy)</div>
+        <div class="card card-soft">
+          <div class="card-header card-header-soft">Cloud Modules (Dummy)</div>
           <div class="card-body">
             <div id="cloud-modules" class="row g-3"></div>
           </div>
         </div>
 
-        <div class="card mt-3">
-          <div class="card-header">Module Details (Dummy)</div>
+        <div class="card card-soft mt-3">
+          <div class="card-header card-header-soft">Module Details (Dummy)</div>
           <div class="card-body" id="cloud-module-detail">Select "Open Dummy" on any module card.</div>
         </div>
       </section>
 
       <section id="explore-section" class="page-section d-none">
-        <div class="row g-3 mb-3">
-          <div class="col-lg-3">
-            <select id="explore-role" class="form-select">
-              <option value="">Role (all)</option>
-              <option value="agent">Agent</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-          <div class="col-lg-3">
-            <select id="explore-type" class="form-select">
-              <option value="">Type (all)</option>
-              <option value="learning_path">Learning Path</option>
-              <option value="certification">Certification</option>
-              <option value="webinar">Webinar</option>
-            </select>
-          </div>
-          <div class="col-lg-3">
-            <select id="explore-level" class="form-select">
-              <option value="">Level (all)</option>
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="advanced">Advanced</option>
-            </select>
-          </div>
-          <div class="col-lg-3 d-grid">
-            <button class="btn btn-primary" id="explore-refresh-btn">Refresh Explore</button>
+        <div class="card card-soft mb-3">
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-lg-3">
+                <select id="explore-role" class="form-select form-control-soft">
+                  <option value="">Role (all)</option>
+                  <option value="agent">Agent</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div class="col-lg-3">
+                <select id="explore-type" class="form-select form-control-soft">
+                  <option value="">Type (all)</option>
+                  <option value="learning_path">Learning Path</option>
+                  <option value="certification">Certification</option>
+                  <option value="webinar">Webinar</option>
+                </select>
+              </div>
+              <div class="col-lg-3">
+                <select id="explore-level" class="form-select form-control-soft">
+                  <option value="">Level (all)</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </div>
+              <div class="col-lg-3 d-grid">
+                <button class="btn btn-soft btn-soft-primary" id="explore-refresh-btn">Refresh Explore</button>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="row g-3">
           <div class="col-lg-4">
-            <div class="card">
-              <div class="card-header">Recommended for You</div>
+            <div class="card card-soft">
+              <div class="card-header card-header-soft">Recommended for You</div>
               <div class="card-body" id="explore-recommendations"></div>
             </div>
-            <div class="card mt-3">
-              <div class="card-header">Catalog Summary</div>
+            <div class="card card-soft mt-3">
+              <div class="card-header card-header-soft">Catalog Summary</div>
               <div class="card-body" id="explore-summary"></div>
             </div>
           </div>
           <div class="col-lg-8">
-            <div class="card">
-              <div class="card-header">Explore Catalog</div>
+            <div class="card card-soft">
+              <div class="card-header card-header-soft">Explore Catalog</div>
               <div class="card-body">
                 <div id="explore-catalog" class="row g-3"></div>
               </div>
@@ -212,10 +331,21 @@
       </section>
 
       <section id="logs-section" class="page-section d-none">
-        <h5>Call Logs</h5>
-        <p class="text-muted">Softphone recent calls are shown here as well.</p>
-        <button class="btn btn-outline-primary mb-3" id="refresh-logs-btn">Refresh</button>
-        <div id="logs-list"></div>
+        <div class="card card-soft">
+          <div class="card-header card-header-soft d-flex flex-wrap gap-2 justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-0">Call Logs</h5>
+              <p class="text-muted small mb-0">Softphone recent calls are shown here as well.</p>
+            </div>
+            <div class="d-flex gap-2">
+              <input class="form-control form-control-soft form-control-sm" id="logs-filter-input" placeholder="Filter logs" style="min-width: 180px;">
+              <button class="btn btn-soft btn-soft-muted" id="refresh-logs-btn">Refresh</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="logs-list"></div>
+          </div>
+        </div>
       </section>
     </main>
   </div>
