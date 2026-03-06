@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="container-fluid">
+  <div class="row min-vh-100">
+    <aside class="col-md-2 sidebar p-3">
+      <h5 class="mb-4">Mini-Genesys</h5>
+      <div class="small text-light mb-2">Logged in as <span id="current-user"></span></div>
+      <div class="d-grid gap-2">
+        <button class="btn btn-outline-light nav-btn active" data-section="softphone">Softphone</button>
+        <button class="btn btn-outline-light nav-btn" data-section="campaigns">Campaigns</button>
+        <button class="btn btn-outline-light nav-btn" data-section="cloud">Cloud Replica</button>
+        <button class="btn btn-outline-light nav-btn" data-section="explore">Explore</button>
+        <button class="btn btn-outline-light nav-btn" data-section="logs">Call Logs</button>
+        <button class="btn btn-danger mt-3" id="logout-btn">Logout</button>
+      </div>
+    </aside>
+    <main class="col-md-10 p-4">
+      <div id="alerts"></div>
+
+      <section id="softphone-section" class="page-section">
+        <div class="row g-4">
+          <div class="col-lg-6">
+            <div class="card">
+              <div class="card-header">Agent Status</div>
+              <div class="card-body">
+                <div class="btn-group" role="group">
+                  <button id="status-available" class="btn btn-success">Available</button>
+                  <button id="status-offline" class="btn btn-secondary">Offline</button>
+                </div>
+                <div class="mt-2 small text-muted" id="status-text">Current: unknown</div>
+              </div>
+            </div>
+            <div class="card mt-3">
+              <div class="card-header">Dial Pad</div>
+              <div class="card-body">
+                <div class="input-group">
+                  <input class="form-control" id="dial-number" placeholder="+14155551234">
+                  <button class="btn btn-primary" id="manual-call-btn">Call</button>
+                </div>
+                <div class="mt-3 d-flex gap-2">
+                  <button class="btn btn-outline-secondary" id="btn-accept">Accept</button>
+                  <button class="btn btn-outline-warning" id="btn-reject">Reject</button>
+                  <button class="btn btn-outline-info" id="btn-mute">Mute</button>
+                  <button class="btn btn-outline-danger" id="btn-hangup">Hang up</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card">
+              <div class="card-header">Recent Calls</div>
+              <div class="card-body p-0">
+                <table class="table table-sm mb-0" id="recent-calls-table">
+                  <thead><tr><th>ID</th><th>Direction</th><th>To</th><th>Status</th><th>Time</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="campaigns-section" class="page-section d-none">
+        <div class="row g-3">
+          <div class="col-lg-4">
+            <div class="card">
+              <div class="card-header">Create Campaign</div>
+              <div class="card-body">
+                <div class="mb-2"><input class="form-control" id="campaign-name" placeholder="Campaign name"></div>
+                <button class="btn btn-primary" id="create-campaign-btn">Create</button>
+                <hr>
+                <div class="mb-2"><input class="form-control" id="campaign-id" placeholder="Campaign ID"></div>
+                <div class="d-flex gap-2 mb-2">
+                  <button class="btn btn-success" id="start-campaign-btn">Start</button>
+                  <button class="btn btn-warning" id="pause-campaign-btn">Pause</button>
+                  <button class="btn btn-danger" id="stop-campaign-btn">Stop</button>
+                </div>
+                <div class="mb-2">
+                  <input type="file" class="form-control" id="csv-file" accept=".csv">
+                </div>
+                <button class="btn btn-outline-primary" id="upload-csv-btn">Upload CSV</button>
+                <div class="small text-muted mt-2">CSV columns: name,phone</div>
+              </div>
+            </div>
+            <div class="card mt-3">
+              <div class="card-header">Campaign Summary</div>
+              <div class="card-body" id="campaign-summary">No campaign loaded.</div>
+            </div>
+          </div>
+          <div class="col-lg-8">
+            <div class="card">
+              <div class="card-header">Campaign Contacts</div>
+              <div class="card-body p-0">
+                <table class="table table-sm mb-0" id="campaign-contacts-table">
+                  <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Status</th><th>Attempts</th><th>Error</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="cloud-section" class="page-section d-none">
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="row g-2 align-items-end">
+              <div class="col-md-3">
+                <label class="form-label small">Category</label>
+                <select id="cloud-category" class="form-select">
+                  <option value="">All categories</option>
+                </select>
+              </div>
+              <div class="col-md-5">
+                <label class="form-label small">Search</label>
+                <input id="cloud-search" class="form-control" placeholder="Search module or feature...">
+              </div>
+              <div class="col-md-2 d-grid">
+                <button id="cloud-refresh-btn" class="btn btn-primary">Refresh</button>
+              </div>
+              <div class="col-md-2 d-grid">
+                <button id="cloud-action-btn" class="btn btn-outline-dark">Run Dummy Action</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-lg-4">
+            <div class="card h-100">
+              <div class="card-header">Replica Overview</div>
+              <div class="card-body" id="cloud-overview"></div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="card h-100">
+              <div class="card-header">Queue Snapshot</div>
+              <div class="card-body" id="cloud-queues"></div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="card h-100">
+              <div class="card-header">Dashboards</div>
+              <div class="card-body" id="cloud-dashboards"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">Cloud Modules (Dummy)</div>
+          <div class="card-body">
+            <div id="cloud-modules" class="row g-3"></div>
+          </div>
+        </div>
+
+        <div class="card mt-3">
+          <div class="card-header">Module Details (Dummy)</div>
+          <div class="card-body" id="cloud-module-detail">Select "Open Dummy" on any module card.</div>
+        </div>
+      </section>
+
+      <section id="explore-section" class="page-section d-none">
+        <div class="row g-3 mb-3">
+          <div class="col-lg-3">
+            <select id="explore-role" class="form-select">
+              <option value="">Role (all)</option>
+              <option value="agent">Agent</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="col-lg-3">
+            <select id="explore-type" class="form-select">
+              <option value="">Type (all)</option>
+              <option value="learning_path">Learning Path</option>
+              <option value="certification">Certification</option>
+              <option value="webinar">Webinar</option>
+            </select>
+          </div>
+          <div class="col-lg-3">
+            <select id="explore-level" class="form-select">
+              <option value="">Level (all)</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+          <div class="col-lg-3 d-grid">
+            <button class="btn btn-primary" id="explore-refresh-btn">Refresh Explore</button>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-lg-4">
+            <div class="card">
+              <div class="card-header">Recommended for You</div>
+              <div class="card-body" id="explore-recommendations"></div>
+            </div>
+            <div class="card mt-3">
+              <div class="card-header">Catalog Summary</div>
+              <div class="card-body" id="explore-summary"></div>
+            </div>
+          </div>
+          <div class="col-lg-8">
+            <div class="card">
+              <div class="card-header">Explore Catalog</div>
+              <div class="card-body">
+                <div id="explore-catalog" class="row g-3"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="logs-section" class="page-section d-none">
+        <h5>Call Logs</h5>
+        <p class="text-muted">Softphone recent calls are shown here as well.</p>
+        <button class="btn btn-outline-primary mb-3" id="refresh-logs-btn">Refresh</button>
+        <div id="logs-list"></div>
+      </section>
+    </main>
+  </div>
+</div>
+{% endblock %}
