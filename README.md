@@ -1,6 +1,8 @@
 # Mini-Genesys — Cloud Contact Center Platform
 
-A full-stack, browser-based contact center application built with **Flask** and **Twilio**, featuring a WebRTC softphone, outbound campaign auto-dialer, cloud UI replica, and a learning catalog — all wrapped in a modern, premium UI.
+> **Vibecoded over a single night** by **Shabul** & **Shoaib** with the help of **Claude** and **ChatGPT**. What started as a "let's see how far we can get" capstone idea turned into a full-blown contact center platform — built from scratch, debugged at 3 AM, and shipped before sunrise.
+
+A full-stack, browser-based contact center application built with **Flask** and **Twilio**, featuring a WebRTC softphone, outbound campaign auto-dialer, cloud UI replica, and a learning catalog — all wrapped in a modern, premium glassmorphism UI.
 
 ---
 
@@ -24,7 +26,7 @@ A full-stack, browser-based contact center application built with **Flask** and 
 
 ## Overview
 
-**Mini-Genesys** is a capstone project that demonstrates full-stack web development with real-time telephony integration. It replicates core features of an enterprise contact center — agent desktop, call routing, outbound campaigns, and administrative dashboards — using a lightweight Python/Flask backend and a single-page-style jQuery frontend.
+**Mini-Genesys** is a capstone project that was vibecoded in one overnight session by **Shabul** and **Shoaib**, pair-programming with AI assistants **Claude** and **ChatGPT**. The idea was simple: replicate the core of an enterprise contact center — agent desktop, call routing, outbound campaigns, and admin dashboards — and actually make it work end-to-end. No templates, no boilerplate starters. Just two devs, two AIs, and a lot of caffeine.
 
 ### What Can It Do?
 
@@ -336,6 +338,19 @@ pytest --cov=app
 
 ---
 
+## The Vibe
+
+This entire project was vibecoded overnight. Here's how it went down:
+
+- **Shabul** and **Shoaib** kicked things off with an idea and a blank repo
+- **Claude** helped architect the Flask backend, design the premium UI, and wire up the Twilio integration
+- **ChatGPT** assisted with brainstorming features, debugging edge cases, and refining the UX
+- No sleep was had. Many bugs were squashed. The result? A working contact center platform by morning.
+
+This is what happens when humans and AI collaborate — you ship things that would normally take weeks, in a single night.
+
+---
+
 ## Contributing
 
 1. Fork the repository
@@ -353,6 +368,8 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 ---
 
 <p align="center">
+  Vibecoded overnight by <strong>Shabul</strong> & <strong>Shoaib</strong><br>
+  Powered by <strong>Claude</strong> & <strong>ChatGPT</strong><br>
   Built with Flask, Twilio, and Bootstrap<br>
   <strong>Mini-Genesys</strong> — Capstone Project
 </p>
