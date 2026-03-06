@@ -373,3 +373,20 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
   Built with Flask, Twilio, and Bootstrap<br>
   <strong>Mini-Genesys</strong> — Capstone Project
 </p>
+
+## Routing + Architect APIs (Real)
+
+- `GET /api/routing/queues`
+- `POST /api/routing/queues`
+- `PATCH /api/routing/queues/{id}`
+- `GET /api/routing/queues/{id}/members`
+- `POST /api/routing/queues/{id}/members`
+- `GET /api/routing/agents`
+- `GET /api/architect/flows`
+- `POST /api/architect/flows`
+- `PATCH /api/architect/flows/{id}`
+- `POST /api/architect/flows/{id}/publish`
+- `GET /api/routing/interactions`
+
+Inbound routing webhook executes published inbound flow + target queue membership routing:
+- `POST /webhooks/twilio/voice/inbound`

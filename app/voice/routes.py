@@ -4,9 +4,12 @@ from flask import Response, jsonify, request
 from flask_login import current_user, login_required
 
 from app.extensions import db
-from app.models import AgentPresence, CallLog, CampaignContact, User
+from app.models import AgentPresence, CallLog, CampaignContact
 from app.services.auth_utils import role_required
+from app.services.campaign_worker import mark_campaign_completed_if_done
+from app.services.routing_service import mark_interaction_status_by_sid, route_inbound_call
 from app.services.twilio_service import TwilioService
+from app.services.webhook_security import validate_twilio_signature
 from app.voice import bp
 
 
@@ -43,24 +46,26 @@ def set_agent_status():
 
 @bp.post("/webhooks/twilio/voice/inbound")
 def inbound_voice_webhook():
-    available_presence = (
-        AgentPresence.query.join(User, User.id == AgentPresence.user_id)
-        .filter(AgentPresence.status == "available", User.is_active.is_(True))
-        .order_by(AgentPresence.updated_at.desc())
-        .first()
-    )
+    if not validate_twilio_signature():
+        return ("invalid signature", 403)
 
-    identity = None
-    if available_presence:
-        identity = f"agent-{available_presence.user.id}-{available_presence.user.username}"
+    to_number = request.form.get("To")
+    from_number = request.form.get("From")
+    call_sid = request.form.get("CallSid")
+
+    decision = route_inbound_call(to_number=to_number, from_number=from_number, twilio_sid=call_sid)
+    db.session.commit()
 
     service = TwilioService()
-    twiml = service.inbound_twiml(identity)
+    twiml = service.inbound_twiml(decision.agent_identity, decision.welcome_prompt)
     return Response(twiml, mimetype="application/xml")
 
 
 @bp.post("/webhooks/twilio/call-status")
 def call_status_webhook():
+    if not validate_twilio_signature():
+        return ("invalid signature", 403)
+
     call_sid = request.form.get("CallSid")
     status = request.form.get("CallStatus")
 
@@ -71,7 +76,9 @@ def call_status_webhook():
             call_log.ended_at = datetime.utcnow()
 
     contact = CampaignContact.query.filter_by(call_sid=call_sid).first()
+    campaign_id = None
     if contact:
+        campaign_id = contact.campaign_id
         map_status = {
             "initiated": "dialing",
             "ringing": "ringing",
@@ -88,7 +95,12 @@ def call_status_webhook():
             if contact.status == "failed":
                 contact.last_error = status
 
+    mark_interaction_status_by_sid(call_sid, status)
     db.session.commit()
+
+    if campaign_id:
+        mark_campaign_completed_if_done(campaign_id)
+
     return ("", 204)
 
 

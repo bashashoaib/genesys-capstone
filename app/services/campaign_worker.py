@@ -11,6 +11,8 @@ from app.services.twilio_service import TwilioService
 scheduler = BackgroundScheduler()
 _app = None
 
+TERMINAL_CONTACT_STATUSES = {"answered", "failed", "skipped"}
+
 
 def init_scheduler(app):
     global _app
@@ -26,11 +28,12 @@ def schedule_campaign(campaign_id: int):
     if scheduler.get_job(job_id):
         return
 
+    interval = max(1, int(_app.config.get("CAMPAIGN_DIAL_INTERVAL_SECONDS", 5))) if _app else 5
     scheduler.add_job(
         func=_tick_campaign,
         id=job_id,
         trigger="interval",
-        seconds=5,
+        seconds=interval,
         max_instances=1,
         replace_existing=True,
         args=[campaign_id],
@@ -59,6 +62,23 @@ def stop_campaign_schedule(campaign_id: int):
         scheduler.remove_job(job_id)
 
 
+def mark_campaign_completed_if_done(campaign_id: int):
+    campaign = Campaign.query.get(campaign_id)
+    if not campaign or campaign.status not in {"running", "paused"}:
+        return
+
+    pending_or_active = CampaignContact.query.filter(
+        CampaignContact.campaign_id == campaign_id,
+        CampaignContact.status.in_(["pending", "dialing", "ringing"]),
+    ).count()
+
+    if pending_or_active == 0:
+        campaign.status = "completed"
+        campaign.stopped_at = datetime.utcnow()
+        db.session.commit()
+        stop_campaign_schedule(campaign_id)
+
+
 def _tick_campaign(campaign_id: int):
     if _app is None:
         return
@@ -75,10 +95,15 @@ def _tick_campaign(campaign_id: int):
         pending = CampaignContact.query.filter_by(campaign_id=campaign_id, status="pending").order_by(CampaignContact.id.asc()).first()
 
         if not pending:
-            campaign.status = "completed"
-            campaign.stopped_at = datetime.utcnow()
+            mark_campaign_completed_if_done(campaign_id)
+            return
+
+        max_attempts = max(1, int(_app.config.get("CAMPAIGN_MAX_ATTEMPTS", 2)))
+        if pending.attempt_count >= max_attempts:
+            pending.status = "failed"
+            pending.last_error = "max attempts reached"
+            pending.updated_at = datetime.utcnow()
             db.session.commit()
-            stop_campaign_schedule(campaign_id)
             return
 
         pending.status = "dialing"
@@ -107,11 +132,15 @@ def _tick_campaign(campaign_id: int):
                 pending.last_error = str(exc)
                 call_log.status = "failed"
                 call_log.ended_at = datetime.utcnow()
-        else:
-            # Local dev fallback allows status transitions to be testable without Twilio credentials.
+        elif _app.config.get("ALLOW_SIMULATED_CALLS", True):
             call_log.twilio_sid = f"simulated-{pending.id}-{int(datetime.utcnow().timestamp())}"
             pending.call_sid = call_log.twilio_sid
             pending.status = "ringing"
             call_log.status = "ringing"
+        else:
+            pending.status = "failed"
+            pending.last_error = "Twilio is not configured and simulated calls are disabled"
+            call_log.status = "failed"
+            call_log.ended_at = datetime.utcnow()
 
         db.session.commit()

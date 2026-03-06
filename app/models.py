@@ -17,6 +17,7 @@ class User(UserMixin, db.Model):
     is_active = db.Column(db.Boolean, nullable=False, default=True)
 
     presence = db.relationship("AgentPresence", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    queue_memberships = db.relationship("QueueMembership", back_populates="user", cascade="all, delete-orphan")
 
 
 class AgentPresence(db.Model):
@@ -27,6 +28,71 @@ class AgentPresence(db.Model):
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     user = db.relationship("User", back_populates="presence")
+
+
+class Queue(db.Model):
+    __tablename__ = "routing_queues"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), unique=True, nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    routing_method = db.Column(db.String(30), nullable=False, default="longest_idle")
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    members = db.relationship("QueueMembership", back_populates="queue", cascade="all, delete-orphan")
+
+
+class QueueMembership(db.Model):
+    __tablename__ = "routing_queue_memberships"
+    __table_args__ = (
+        db.UniqueConstraint("queue_id", "user_id", name="uq_queue_user"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    queue_id = db.Column(db.Integer, db.ForeignKey("routing_queues.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    priority = db.Column(db.Integer, nullable=False, default=1)
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+
+    queue = db.relationship("Queue", back_populates="members")
+    user = db.relationship("User", back_populates="queue_memberships")
+
+
+class ArchitectFlow(db.Model):
+    __tablename__ = "architect_flows"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    flow_type = db.Column(db.String(40), nullable=False, default="inbound_call")
+    inbound_number = db.Column(db.String(30), nullable=True)
+    target_queue_id = db.Column(db.Integer, db.ForeignKey("routing_queues.id"), nullable=True)
+    welcome_prompt = db.Column(db.Text, nullable=True)
+    is_published = db.Column(db.Boolean, nullable=False, default=False)
+    created_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    target_queue = db.relationship("Queue")
+
+
+class RoutingInteraction(db.Model):
+    __tablename__ = "routing_interactions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    channel = db.Column(db.String(20), nullable=False, default="voice")
+    direction = db.Column(db.String(20), nullable=False, default="inbound")
+    from_number = db.Column(db.String(30), nullable=True)
+    to_number = db.Column(db.String(30), nullable=True)
+    status = db.Column(db.String(30), nullable=False, default="queued")
+    twilio_sid = db.Column(db.String(64), unique=True, nullable=True)
+    queue_id = db.Column(db.Integer, db.ForeignKey("routing_queues.id"), nullable=True)
+    assigned_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    flow_id = db.Column(db.Integer, db.ForeignKey("architect_flows.id"), nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    answered_at = db.Column(db.DateTime, nullable=True)
+    ended_at = db.Column(db.DateTime, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
 
 
 class CallLog(db.Model):

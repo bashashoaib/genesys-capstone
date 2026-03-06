@@ -3,7 +3,7 @@ from io import BytesIO
 
 from tests.conftest import login
 from app.extensions import db
-from app.models import AgentPresence, CallLog, CampaignContact, User
+from app.models import AgentPresence, CallLog, CampaignContact, RoutingInteraction, User
 
 
 def test_inbound_webhook_routes_to_available_agent(client, app):
@@ -14,9 +14,14 @@ def test_inbound_webhook_routes_to_available_agent(client, app):
         presence.updated_at = datetime.utcnow()
         db.session.commit()
 
-    res = client.post("/webhooks/twilio/voice/inbound")
+    res = client.post("/webhooks/twilio/voice/inbound", data={"To": "+14155550000", "From": "+14155550199", "CallSid": "CA-IN-1"})
     assert res.status_code == 200
     assert b"<Client>agent-" in res.data
+
+    with app.app_context():
+        interaction = RoutingInteraction.query.filter_by(twilio_sid="CA-IN-1").first()
+        assert interaction is not None
+        assert interaction.assigned_user_id is not None
 
 
 def test_inbound_webhook_offline_message(client, app):
@@ -25,9 +30,9 @@ def test_inbound_webhook_offline_message(client, app):
             presence.status = "offline"
         db.session.commit()
 
-    res = client.post("/webhooks/twilio/voice/inbound")
+    res = client.post("/webhooks/twilio/voice/inbound", data={"To": "+14155550000", "From": "+14155550199", "CallSid": "CA-IN-2"})
     assert res.status_code == 200
-    assert b"offline" in res.data
+    assert b"No routed agent" in res.data
 
 
 def test_manual_outbound_creates_call_log(client, app):

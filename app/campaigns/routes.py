@@ -8,6 +8,7 @@ from app.extensions import db
 from app.models import Campaign, CampaignContact
 from app.services.auth_utils import role_required
 from app.services.campaign_worker import (
+    mark_campaign_completed_if_done,
     pause_campaign_schedule,
     resume_campaign_schedule,
     schedule_campaign,
@@ -22,6 +23,26 @@ VALID_TRANSITIONS = {
     "stopped": set(),
     "completed": set(),
 }
+
+
+@bp.get("/api/campaigns")
+@login_required
+@role_required("admin", "agent")
+def list_campaigns():
+    rows = Campaign.query.order_by(Campaign.created_at.desc()).limit(100).all()
+    return jsonify(
+        [
+            {
+                "id": row.id,
+                "name": row.name,
+                "status": row.status,
+                "created_at": row.created_at.isoformat() if row.created_at else None,
+                "started_at": row.started_at.isoformat() if row.started_at else None,
+                "stopped_at": row.stopped_at.isoformat() if row.stopped_at else None,
+            }
+            for row in rows
+        ]
+    )
 
 
 @bp.post("/api/campaigns")
@@ -88,11 +109,10 @@ def start_campaign(campaign_id: int):
 
     db.session.commit()
 
-    if campaign.status == "running":
-        if previous_status == "paused":
-            resume_campaign_schedule(campaign.id)
-        else:
-            schedule_campaign(campaign.id)
+    if previous_status == "paused":
+        resume_campaign_schedule(campaign.id)
+    else:
+        schedule_campaign(campaign.id)
 
     return jsonify({"id": campaign.id, "status": campaign.status})
 
@@ -131,6 +151,9 @@ def stop_campaign(campaign_id: int):
 @role_required("admin", "agent")
 def campaign_status(campaign_id: int):
     campaign = Campaign.query.get_or_404(campaign_id)
+    mark_campaign_completed_if_done(campaign.id)
+    campaign = Campaign.query.get_or_404(campaign_id)
+
     counts = (
         db.session.query(CampaignContact.status, db.func.count(CampaignContact.id))
         .filter_by(campaign_id=campaign.id)

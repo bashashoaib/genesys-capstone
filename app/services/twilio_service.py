@@ -78,14 +78,17 @@ class TwilioService:
             status_callback_method="POST",
         )
 
-    def inbound_twiml(self, agent_identity: str | None) -> str:
+    def inbound_twiml(self, agent_identity: str | None, welcome_prompt: str | None = None) -> str:
         response = VoiceResponse()
+        if welcome_prompt:
+            response.say(welcome_prompt)
+
         if agent_identity:
             dial = Dial(caller_id=self.config.caller_id, answer_on_bridge=True, timeout=20)
             dial.client(agent_identity)
             response.append(dial)
         else:
-            response.say("All agents are currently offline. Please call again later.")
+            response.say("No routed agent is currently available. Please call again later.")
             response.hangup()
         return str(response)
 

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import jsonify, request
+from flask import current_app, jsonify, request
 from flask_login import current_user, login_required
 
 from app.calls import bp
@@ -41,9 +41,15 @@ def manual_call():
             call_log.ended_at = datetime.utcnow()
             db.session.commit()
             return jsonify({"error": "Twilio outbound failed", "detail": str(exc)}), 502
-    else:
+    elif current_app.config.get("ALLOW_SIMULATED_CALLS", True):
         call_log.twilio_sid = f"simulated-manual-{call_log.id}"
         call_log.status = "ringing"
+    else:
+        call_log.status = "failed"
+        call_log.notes = "Twilio is not configured and simulated calls are disabled"
+        call_log.ended_at = datetime.utcnow()
+        db.session.commit()
+        return jsonify({"error": "Twilio is not configured"}), 503
 
     db.session.commit()
     return jsonify({"id": call_log.id, "twilio_sid": call_log.twilio_sid, "status": call_log.status})

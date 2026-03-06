@@ -10,6 +10,8 @@ class TestConfig:
     SQLALCHEMY_DATABASE_URI = "sqlite://"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SCHEDULER_ENABLED = False
+    ALLOW_SIMULATED_CALLS = True
+    TWILIO_VALIDATE_SIGNATURE = False
 
     TWILIO_ACCOUNT_SID = ""
     TWILIO_AUTH_TOKEN = ""
@@ -26,9 +28,10 @@ def app():
     with app.app_context():
         db.drop_all()
         db.create_all()
-        from app import seed_users
+        from app import seed_routing_defaults, seed_users
 
         seed_users()
+        seed_routing_defaults()
     yield app
 
 
