@@ -2,207 +2,350 @@
 {% block body %}
 <div class="container-fluid">
   <div class="row min-vh-100">
+    <!-- ===== Sidebar ===== -->
     <aside class="col-md-2 sidebar p-3">
-      <h5 class="mb-4">Mini-Genesys</h5>
-      <div class="small text-light mb-2">Logged in as <span id="current-user"></span></div>
-      <div class="d-grid gap-2">
-        <button class="btn btn-outline-light nav-btn active" data-section="softphone">Softphone</button>
-        <button class="btn btn-outline-light nav-btn" data-section="campaigns">Campaigns</button>
-        <button class="btn btn-outline-light nav-btn" data-section="cloud">Cloud Replica</button>
-        <button class="btn btn-outline-light nav-btn" data-section="explore">Explore</button>
-        <button class="btn btn-outline-light nav-btn" data-section="logs">Call Logs</button>
-        <button class="btn btn-danger mt-3" id="logout-btn">Logout</button>
+      <div class="sidebar-brand mb-1">
+        <i class="bi bi-headset"></i> Mini-Genesys
+      </div>
+      <div class="small text-light mb-4">Logged in as <span id="current-user"></span></div>
+      <div class="d-grid gap-1">
+        <button class="btn nav-btn active" data-section="softphone">
+          <i class="bi bi-telephone"></i> Softphone
+        </button>
+        <button class="btn nav-btn" data-section="campaigns">
+          <i class="bi bi-megaphone"></i> Campaigns
+        </button>
+        <button class="btn nav-btn" data-section="cloud">
+          <i class="bi bi-cloud"></i> Cloud Replica
+        </button>
+        <button class="btn nav-btn" data-section="explore">
+          <i class="bi bi-compass"></i> Explore
+        </button>
+        <button class="btn nav-btn" data-section="logs">
+          <i class="bi bi-journal-text"></i> Call Logs
+        </button>
+        <button class="btn btn-danger mt-3" id="logout-btn">
+          <i class="bi bi-box-arrow-left me-1"></i> Logout
+        </button>
       </div>
     </aside>
-    <main class="col-md-10 p-4">
-      <div id="alerts"></div>
 
+    <!-- ===== Main Content ===== -->
+    <main class="col-md-10 p-4">
+      <!-- Toast container for alerts -->
+      <div id="alerts" class="toast-container"></div>
+
+      <!-- ===== SOFTPHONE ===== -->
       <section id="softphone-section" class="page-section">
+        <h4 class="section-title"><i class="bi bi-telephone-inbound"></i> Softphone</h4>
         <div class="row g-4">
           <div class="col-lg-6">
+            <!-- Agent Status -->
             <div class="card">
-              <div class="card-header">Agent Status</div>
+              <div class="card-header"><i class="bi bi-person-badge"></i> Agent Status</div>
               <div class="card-body">
-                <div class="btn-group" role="group">
-                  <button id="status-available" class="btn btn-success">Available</button>
-                  <button id="status-offline" class="btn btn-secondary">Offline</button>
+                <div class="d-flex align-items-center gap-3">
+                  <div class="btn-group" role="group">
+                    <button id="status-available" class="btn btn-success">
+                      <i class="bi bi-check-circle me-1"></i> Available
+                    </button>
+                    <button id="status-offline" class="btn btn-secondary">
+                      <i class="bi bi-x-circle me-1"></i> Offline
+                    </button>
+                  </div>
+                  <div class="agent-status-indicator offline" id="status-text">
+                    <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> Unknown
+                  </div>
                 </div>
-                <div class="mt-2 small text-muted" id="status-text">Current: unknown</div>
               </div>
             </div>
+
+            <!-- Dial Pad -->
             <div class="card mt-3">
-              <div class="card-header">Dial Pad</div>
+              <div class="card-header"><i class="bi bi-dial"></i> Dial Pad</div>
               <div class="card-body">
-                <div class="input-group">
-                  <input class="form-control" id="dial-number" placeholder="+14155551234">
-                  <button class="btn btn-primary" id="manual-call-btn">Call</button>
+                <div class="input-group mb-3">
+                  <span class="input-group-text" style="border: 1.5px solid var(--border-soft); border-right: none; border-radius: var(--radius-sm) 0 0 var(--radius-sm); background: var(--surface);">
+                    <i class="bi bi-telephone" style="color: var(--primary);"></i>
+                  </span>
+                  <input class="form-control" id="dial-number" placeholder="+14155551234"
+                         style="border-left: none;">
+                  <button class="btn btn-primary" id="manual-call-btn">
+                    <i class="bi bi-telephone-outbound me-1"></i> Call
+                  </button>
                 </div>
-                <div class="mt-3 d-flex gap-2">
-                  <button class="btn btn-outline-secondary" id="btn-accept">Accept</button>
-                  <button class="btn btn-outline-warning" id="btn-reject">Reject</button>
-                  <button class="btn btn-outline-info" id="btn-mute">Mute</button>
-                  <button class="btn btn-outline-danger" id="btn-hangup">Hang up</button>
+                <div class="call-controls">
+                  <button class="btn btn-outline-secondary" id="btn-accept">
+                    <i class="bi bi-telephone-inbound"></i> Accept
+                  </button>
+                  <button class="btn btn-outline-warning" id="btn-reject">
+                    <i class="bi bi-telephone-x"></i> Reject
+                  </button>
+                  <button class="btn btn-outline-info" id="btn-mute">
+                    <i class="bi bi-mic-mute"></i> Mute
+                  </button>
+                  <button class="btn btn-outline-danger" id="btn-hangup">
+                    <i class="bi bi-telephone-minus"></i> Hang up
+                  </button>
                 </div>
               </div>
             </div>
           </div>
+
+          <!-- Recent Calls -->
           <div class="col-lg-6">
-            <div class="card">
-              <div class="card-header">Recent Calls</div>
+            <div class="card h-100">
+              <div class="card-header">
+                <i class="bi bi-clock-history"></i> Recent Calls
+                <span class="badge text-bg-secondary ms-auto" id="calls-count">0</span>
+              </div>
               <div class="card-body p-0">
-                <table class="table table-sm mb-0" id="recent-calls-table">
-                  <thead><tr><th>ID</th><th>Direction</th><th>To</th><th>Status</th><th>Time</th></tr></thead>
-                  <tbody></tbody>
-                </table>
+                <div class="table-responsive">
+                  <table class="table table-sm mb-0" id="recent-calls-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Direction</th>
+                        <th>To</th>
+                        <th>Status</th>
+                        <th>Time</th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
+      <!-- ===== CAMPAIGNS ===== -->
       <section id="campaigns-section" class="page-section d-none">
+        <h4 class="section-title"><i class="bi bi-megaphone"></i> Campaigns</h4>
         <div class="row g-3">
           <div class="col-lg-4">
+            <!-- Create Campaign -->
             <div class="card">
-              <div class="card-header">Create Campaign</div>
+              <div class="card-header"><i class="bi bi-plus-circle"></i> Create Campaign</div>
               <div class="card-body">
-                <div class="mb-2"><input class="form-control" id="campaign-name" placeholder="Campaign name"></div>
-                <button class="btn btn-primary" id="create-campaign-btn">Create</button>
-                <hr>
-                <div class="mb-2"><input class="form-control" id="campaign-id" placeholder="Campaign ID"></div>
-                <div class="d-flex gap-2 mb-2">
-                  <button class="btn btn-success" id="start-campaign-btn">Start</button>
-                  <button class="btn btn-warning" id="pause-campaign-btn">Pause</button>
-                  <button class="btn btn-danger" id="stop-campaign-btn">Stop</button>
+                <div class="mb-3">
+                  <label class="form-label">Campaign Name</label>
+                  <input class="form-control" id="campaign-name" placeholder="e.g. Spring Outreach">
                 </div>
-                <div class="mb-2">
+                <button class="btn btn-primary w-100" id="create-campaign-btn">
+                  <i class="bi bi-plus-lg me-1"></i> Create Campaign
+                </button>
+                <hr>
+                <div class="mb-3">
+                  <label class="form-label">Campaign ID</label>
+                  <input class="form-control" id="campaign-id" placeholder="Enter ID to manage">
+                </div>
+                <div class="d-flex gap-2 mb-3">
+                  <button class="btn btn-success flex-fill" id="start-campaign-btn">
+                    <i class="bi bi-play-fill"></i> Start
+                  </button>
+                  <button class="btn btn-warning flex-fill" id="pause-campaign-btn">
+                    <i class="bi bi-pause-fill"></i> Pause
+                  </button>
+                  <button class="btn btn-danger flex-fill" id="stop-campaign-btn">
+                    <i class="bi bi-stop-fill"></i> Stop
+                  </button>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Upload Contacts</label>
                   <input type="file" class="form-control" id="csv-file" accept=".csv">
                 </div>
-                <button class="btn btn-outline-primary" id="upload-csv-btn">Upload CSV</button>
-                <div class="small text-muted mt-2">CSV columns: name,phone</div>
+                <button class="btn btn-outline-primary w-100" id="upload-csv-btn">
+                  <i class="bi bi-cloud-upload me-1"></i> Upload CSV
+                </button>
+                <div class="small text-muted mt-2 text-center">
+                  <i class="bi bi-info-circle me-1"></i> CSV columns: name, phone
+                </div>
               </div>
             </div>
+
+            <!-- Campaign Summary -->
             <div class="card mt-3">
-              <div class="card-header">Campaign Summary</div>
-              <div class="card-body" id="campaign-summary">No campaign loaded.</div>
+              <div class="card-header"><i class="bi bi-bar-chart-line"></i> Campaign Summary</div>
+              <div class="card-body" id="campaign-summary">
+                <div class="empty-state">
+                  <i class="bi bi-inbox d-block"></i>
+                  <p>No campaign loaded</p>
+                </div>
+              </div>
             </div>
           </div>
+
+          <!-- Campaign Contacts Table -->
           <div class="col-lg-8">
-            <div class="card">
-              <div class="card-header">Campaign Contacts</div>
+            <div class="card h-100">
+              <div class="card-header">
+                <i class="bi bi-people"></i> Campaign Contacts
+              </div>
               <div class="card-body p-0">
-                <table class="table table-sm mb-0" id="campaign-contacts-table">
-                  <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Status</th><th>Attempts</th><th>Error</th></tr></thead>
-                  <tbody></tbody>
-                </table>
+                <div class="table-responsive">
+                  <table class="table table-sm mb-0" id="campaign-contacts-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Attempts</th>
+                        <th>Error</th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
+      <!-- ===== CLOUD REPLICA ===== -->
       <section id="cloud-section" class="page-section d-none">
+        <h4 class="section-title"><i class="bi bi-cloud"></i> Cloud Replica</h4>
+
+        <!-- Filters -->
         <div class="card mb-3">
-          <div class="card-body">
+          <div class="card-body py-3">
             <div class="row g-2 align-items-end">
               <div class="col-md-3">
-                <label class="form-label small">Category</label>
+                <label class="form-label">Category</label>
                 <select id="cloud-category" class="form-select">
                   <option value="">All categories</option>
                 </select>
               </div>
               <div class="col-md-5">
-                <label class="form-label small">Search</label>
-                <input id="cloud-search" class="form-control" placeholder="Search module or feature...">
+                <label class="form-label">Search</label>
+                <div class="position-relative">
+                  <input id="cloud-search" class="form-control" placeholder="Search module or feature..."
+                         style="padding-left: 2.2rem;">
+                  <i class="bi bi-search position-absolute" style="left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem;"></i>
+                </div>
               </div>
               <div class="col-md-2 d-grid">
-                <button id="cloud-refresh-btn" class="btn btn-primary">Refresh</button>
+                <button id="cloud-refresh-btn" class="btn btn-primary">
+                  <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+                </button>
               </div>
               <div class="col-md-2 d-grid">
-                <button id="cloud-action-btn" class="btn btn-outline-dark">Run Dummy Action</button>
+                <button id="cloud-action-btn" class="btn btn-outline-dark">
+                  <i class="bi bi-lightning me-1"></i> Run Action
+                </button>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- Overview Cards -->
         <div class="row g-3 mb-3">
           <div class="col-lg-4">
             <div class="card h-100">
-              <div class="card-header">Replica Overview</div>
+              <div class="card-header"><i class="bi bi-grid-3x3-gap"></i> Replica Overview</div>
               <div class="card-body" id="cloud-overview"></div>
             </div>
           </div>
           <div class="col-lg-4">
             <div class="card h-100">
-              <div class="card-header">Queue Snapshot</div>
+              <div class="card-header"><i class="bi bi-people-fill"></i> Queue Snapshot</div>
               <div class="card-body" id="cloud-queues"></div>
             </div>
           </div>
           <div class="col-lg-4">
             <div class="card h-100">
-              <div class="card-header">Dashboards</div>
+              <div class="card-header"><i class="bi bi-speedometer2"></i> Dashboards</div>
               <div class="card-body" id="cloud-dashboards"></div>
             </div>
           </div>
         </div>
 
+        <!-- Modules Grid -->
         <div class="card">
-          <div class="card-header">Cloud Modules (Dummy)</div>
+          <div class="card-header"><i class="bi bi-boxes"></i> Cloud Modules</div>
           <div class="card-body">
             <div id="cloud-modules" class="row g-3"></div>
           </div>
         </div>
 
+        <!-- Module Detail -->
         <div class="card mt-3">
-          <div class="card-header">Module Details (Dummy)</div>
-          <div class="card-body" id="cloud-module-detail">Select "Open Dummy" on any module card.</div>
+          <div class="card-header"><i class="bi bi-info-circle"></i> Module Details</div>
+          <div class="card-body" id="cloud-module-detail">
+            <div class="empty-state">
+              <i class="bi bi-cursor-fill d-block"></i>
+              <p>Select "Open" on any module card to view details</p>
+            </div>
+          </div>
         </div>
       </section>
 
+      <!-- ===== EXPLORE ===== -->
       <section id="explore-section" class="page-section d-none">
-        <div class="row g-3 mb-3">
-          <div class="col-lg-3">
-            <select id="explore-role" class="form-select">
-              <option value="">Role (all)</option>
-              <option value="agent">Agent</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-          <div class="col-lg-3">
-            <select id="explore-type" class="form-select">
-              <option value="">Type (all)</option>
-              <option value="learning_path">Learning Path</option>
-              <option value="certification">Certification</option>
-              <option value="webinar">Webinar</option>
-            </select>
-          </div>
-          <div class="col-lg-3">
-            <select id="explore-level" class="form-select">
-              <option value="">Level (all)</option>
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="advanced">Advanced</option>
-            </select>
-          </div>
-          <div class="col-lg-3 d-grid">
-            <button class="btn btn-primary" id="explore-refresh-btn">Refresh Explore</button>
+        <h4 class="section-title"><i class="bi bi-compass"></i> Explore Learning Catalog</h4>
+
+        <!-- Filters -->
+        <div class="card mb-3">
+          <div class="card-body py-3">
+            <div class="row g-2 align-items-end">
+              <div class="col-lg-3">
+                <label class="form-label">Role</label>
+                <select id="explore-role" class="form-select">
+                  <option value="">All roles</option>
+                  <option value="agent">Agent</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div class="col-lg-3">
+                <label class="form-label">Type</label>
+                <select id="explore-type" class="form-select">
+                  <option value="">All types</option>
+                  <option value="learning_path">Learning Path</option>
+                  <option value="certification">Certification</option>
+                  <option value="webinar">Webinar</option>
+                </select>
+              </div>
+              <div class="col-lg-3">
+                <label class="form-label">Level</label>
+                <select id="explore-level" class="form-select">
+                  <option value="">All levels</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </div>
+              <div class="col-lg-3 d-grid">
+                <label class="form-label">&nbsp;</label>
+                <button class="btn btn-primary" id="explore-refresh-btn">
+                  <i class="bi bi-funnel me-1"></i> Apply Filters
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="row g-3">
+          <!-- Sidebar -->
           <div class="col-lg-4">
             <div class="card">
-              <div class="card-header">Recommended for You</div>
+              <div class="card-header"><i class="bi bi-star"></i> Recommended for You</div>
               <div class="card-body" id="explore-recommendations"></div>
             </div>
             <div class="card mt-3">
-              <div class="card-header">Catalog Summary</div>
+              <div class="card-header"><i class="bi bi-pie-chart"></i> Catalog Summary</div>
               <div class="card-body" id="explore-summary"></div>
             </div>
           </div>
+          <!-- Catalog -->
           <div class="col-lg-8">
             <div class="card">
-              <div class="card-header">Explore Catalog</div>
+              <div class="card-header">
+                <i class="bi bi-collection"></i> Explore Catalog
+                <span class="badge text-bg-secondary ms-auto" id="catalog-count">0</span>
+              </div>
               <div class="card-body">
                 <div id="explore-catalog" class="row g-3"></div>
               </div>
@@ -211,12 +354,18 @@
         </div>
       </section>
 
+      <!-- ===== CALL LOGS ===== -->
       <section id="logs-section" class="page-section d-none">
-        <h5>Call Logs</h5>
-        <p class="text-muted">Softphone recent calls are shown here as well.</p>
-        <button class="btn btn-outline-primary mb-3" id="refresh-logs-btn">Refresh</button>
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h4 class="section-title mb-0"><i class="bi bi-journal-text"></i> Call Logs</h4>
+          <button class="btn btn-outline-primary" id="refresh-logs-btn">
+            <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+          </button>
+        </div>
+        <p class="text-muted small mb-3">Complete history of all calls across softphone and campaigns.</p>
         <div id="logs-list"></div>
       </section>
+
     </main>
   </div>
 </div>
