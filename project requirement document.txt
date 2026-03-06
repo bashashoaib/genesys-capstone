@@ -1,0 +1,101 @@
+
+
+# Product Requirements Document (PRD): "Mini-Genesys" Cloud Contact Center
+
+## 1. Executive Summary
+
+**Product Name:** Mini-Genesys (Placeholder)
+**Objective:** To build a web-based, lightweight contact center application that enables users (agents) to handle inbound calls, make outbound calls via a browser-based softphone, and execute automated outbound dialing campaigns.
+**Target Audience:** Capstone project evaluators, demonstrating full-stack web development and telephony API integrations.
+
+## 2. Technical Assumptions & Feasibility Considerations
+
+To make this achievable within your stack, we will make the following architectural decisions:
+
+* **Telephony Engine:** Twilio API (or similar CPaaS). Twilio provides a Voice JavaScript SDK that works perfectly with your frontend stack (jQuery/AJAX) to handle browser-based audio (WebRTC).
+* **Backend:** Python (Flask) will serve the HTML pages, handle Twilio Webhooks (e.g., routing incoming calls), and manage database operations.
+* **Database:** SQLite or PostgreSQL (via SQLAlchemy) to store call logs, agent status, and campaign contacts.
+* **Asynchronous Tasks:** For the Outbound Campaign feature, you will need a background task queue (like Celery + Redis, or Python's built-in `apscheduler` for a simpler capstone setup) so that the Flask server doesn't freeze while dialing hundreds of numbers.
+* **Frontend Interactivity:** jQuery and AJAX will be used to poll the server for campaign updates and update the UI without reloading the page.
+
+## 3. User Personas
+
+* **Agent:** Logs into the platform, changes status to "Available," receives inbound calls, manually dials outbound calls, and takes notes.
+* **Manager/Admin:** Creates campaigns, uploads contact lists (CSV), starts/stops campaigns, and views call logs. *(For the capstone, these can be the same user role to save time).*
+
+---
+
+## 4. Core Features & Requirements
+
+### Feature 1: The Agent Desktop & Softphone
+
+The core interface where calls happen.
+
+* **Requirements:**
+* **WebRTC Softphone:** A dial pad built with Bootstrap. Uses Twilio JS SDK to establish an audio connection through the browser.
+* **Agent Status:** A toggle (Available / Offline) managed via AJAX. If Offline, inbound calls route to a busy message.
+* **Call Controls:** Accept, Reject, Mute, and Hang-up buttons.
+* **Call Log Display:** A side panel showing the history of recent calls (fetched via AJAX).
+
+
+
+### Feature 2: Inbound Call Handling
+
+Routing calls from the outside world to the web browser.
+
+* **Requirements:**
+* A dedicated virtual phone number (provided by Twilio).
+* When a customer calls the number, Twilio sends an HTTP POST (Webhook) to your Flask backend.
+* Flask checks the database to see if the Agent is "Available".
+* If available, Flask returns TwiML (Twilio XML) instructing the call to route to the WebRTC browser client. The jQuery frontend rings, and the agent can click "Accept".
+
+
+
+### Feature 3: Manual Outbound Calling
+
+Allowing the agent to dial any standard phone number.
+
+* **Requirements:**
+* Agent enters a phone number in the Bootstrap dial pad and clicks "Call".
+* jQuery triggers the Twilio JS client to initiate the call.
+* Flask backend generates the necessary authentication tokens and logs the outbound call attempt in the database.
+
+
+
+### Feature 4: Outbound Campaign (Auto-Dialer)
+
+The most complex feature: automating the dialing process.
+
+* **Requirements:**
+* **Campaign Creation:** A Bootstrap form to name the campaign and set parameters.
+* **List Upload:** Ability to upload a simple CSV file of names and phone numbers. Flask parses this CSV and saves the contacts to the database, linked to the campaign.
+* **Campaign Execution:** "Start", "Pause", and "Stop" buttons.
+* **Dialing Logic (Progressive/Preview Dialer):** When the campaign starts, a background Python process pulls a number from the database and uses the Twilio REST API to initiate a call.
+* **Live Dashboard:** A table showing the uploaded contacts. jQuery/AJAX polls the Flask backend every few seconds to update the status of each contact (e.g., "Pending", "Ringing", "Answered", "Failed").
+
+
+
+---
+
+## 5. UI/UX Specifications (Bootstrap/jQuery)
+
+* **Layout:** Single Page Application (SPA) feel. Use a fixed sidebar for navigation (Softphone, Campaigns, Call Logs) and a main content area.
+* **Modals:** Use Bootstrap Modals for the "Upload CSV" campaign feature.
+* **Notifications:** Use a toast notification library (or simple Bootstrap alerts) via AJAX to notify the user if a campaign call fails or connects.
+
+## 6. Out of Scope (To keep the capstone manageable)
+
+* **Skill-based routing:** Routing calls to different queues based on agent skills.
+* **Predictive Dialing:** An algorithm that dials multiple numbers at once predicting when an agent will be free (stick to dialing one at a time for the campaign).
+* **Interactive Voice Response (IVR):** "Press 1 for Sales, 2 for Support". Keep it direct-to-agent for now.
+* **Call Recording:** Can be enabled via Twilio, but introduces storage complexities.
+
+---
+
+## 7. Recommended Development Milestones
+
+1. **Phase 1: Foundation.** Set up Flask, basic Bootstrap layout, and SQL database.
+2. **Phase 2: The Softphone.** Integrate Twilio JS SDK. Get a basic browser-to-phone outbound call working.
+3. **Phase 3: Inbound.** Set up Twilio webhooks to your Flask server (you will need to use `ngrok` to expose your local Flask server to the internet during development). Route a call to the browser.
+4. **Phase 4: Campaigns.** Build the CSV upload, database models for campaigns, and the background task loop to auto-dial numbers.
+5. **Phase 5: Polish.** Add AJAX polling for live UI updates, CSS styling, and error handling.

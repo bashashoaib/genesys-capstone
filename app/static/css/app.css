@@ -1,0 +1,17 @@
+body {
+  background: linear-gradient(180deg, #f5f7fb 0%, #e9eef5 100%);
+}
+
+.sidebar {
+  background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+}
+
+.card {
+  border: 0;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+}
+
+.table td,
+.table th {
+  vertical-align: middle;
+}

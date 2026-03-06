@@ -1,0 +1,10 @@
+Flask==3.1.0
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+Flask-Migrate==4.0.7
+alembic==1.14.0
+APScheduler==3.10.4
+python-dotenv==1.0.1
+twilio==9.3.2
+phonenumbers==8.13.46
+pytest==8.3.3
